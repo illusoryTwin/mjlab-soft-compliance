@@ -27,6 +27,11 @@ class RewardWeightStage(TypedDict):
   weight: float
 
 
+class EventParamStage(TypedDict):
+  step: int
+  value: float
+
+
 def terrain_levels_vel(
   env: ManagerBasedRlEnv,
   env_ids: torch.Tensor,
@@ -105,3 +110,19 @@ def reward_weight(
     if env.common_step_counter > stage["step"]:
       reward_term_cfg.weight = stage["weight"]
   return torch.tensor([reward_term_cfg.weight])
+
+
+def event_param(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor,
+  event_name: str,
+  param_name: str,
+  stages: list[EventParamStage],
+) -> torch.Tensor:
+  """Update an event term's parameter based on training step stages."""
+  del env_ids  # Unused.
+  term_cfg = env.event_manager.get_term_cfg(event_name)
+  for stage in stages:
+    if env.common_step_counter > stage["step"]:
+      term_cfg.params[param_name] = stage["value"]
+  return torch.tensor([term_cfg.params[param_name]])

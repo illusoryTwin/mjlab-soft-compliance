@@ -26,7 +26,7 @@ from mjlab.scene import SceneCfg
 from mjlab.sensor import GridPatternCfg, ObjRef, RayCastSensorCfg
 from mjlab.sim import MujocoCfg, SimulationCfg
 from mjlab.tasks.velocity import mdp
-from mjlab.tasks.velocity.mdp import UniformVelocityCommandCfg
+from mjlab.tasks.velocity.mdp import JointPositionCommandCfg, UniformVelocityCommandCfg
 from mjlab.terrains import TerrainEntityCfg
 from mjlab.terrains.config import ROUGH_TERRAINS_CFG
 from mjlab.utils.noise import UniformNoiseCfg as Unoise
@@ -174,7 +174,49 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
         ang_vel_z=(-0.5, 0.5),
         heading=(-math.pi, math.pi),
       ),
-    )
+    ),
+    "joint_pos": JointPositionCommandCfg(
+      resampling_time_range=(10.0, 10.0),
+      entity_name="robot",
+      joint_names=[
+        # Left arm.
+        "left_shoulder_pitch_joint",
+        "left_shoulder_roll_joint",
+        "left_shoulder_yaw_joint",
+        "left_elbow_joint",
+        "left_wrist_roll_joint",
+        "left_wrist_pitch_joint",
+        "left_wrist_yaw_joint",
+        # Right arm.
+        "right_shoulder_pitch_joint",
+        "right_shoulder_roll_joint",
+        "right_shoulder_yaw_joint",
+        "right_elbow_joint",
+        "right_wrist_roll_joint",
+        "right_wrist_pitch_joint",
+        "right_wrist_yaw_joint",
+      ],
+      ranges={
+        # Left arm.
+        "left_shoulder_pitch_joint": (-0.5, 1.0),
+        "left_shoulder_roll_joint": (0.0, 0.8),
+        "left_shoulder_yaw_joint": (-0.5, 0.5),
+        "left_elbow_joint": (0.3, 1.8),
+        "left_wrist_roll_joint": (-0.5, 0.5),
+        "left_wrist_pitch_joint": (-0.5, 0.5),
+        "left_wrist_yaw_joint": (-0.5, 0.5),
+        # Right arm.
+        "right_shoulder_pitch_joint": (-0.5, 1.0),
+        "right_shoulder_roll_joint": (-0.8, 0.0),
+        "right_shoulder_yaw_joint": (-0.5, 0.5),
+        "right_elbow_joint": (0.3, 1.8),
+        "right_wrist_roll_joint": (-0.5, 0.5),
+        "right_wrist_pitch_joint": (-0.5, 0.5),
+        "right_wrist_yaw_joint": (-0.5, 0.5),
+      },
+      smooth_sampling=False,
+      sampling_frequency_range=(0.0, 0.4),
+    ),
   }
 
   ##

@@ -43,6 +43,31 @@ class PlayConfig:
   _demo_mode: tyro.conf.Suppress[bool] = False
 
 
+def _find_latest_local_checkpoint(log_root_path: Path) -> Path:
+  """Find the latest checkpoint in the most recent local run directory."""
+  if not log_root_path.exists():
+    raise FileNotFoundError(
+      f"No local logs found at: {log_root_path}\n"
+      "Train first, or provide --checkpoint-file or --wandb-run-path."
+    )
+  # Run dirs are named by timestamp, so sorting gives chronological order.
+  run_dirs = sorted(
+    (d for d in log_root_path.iterdir() if d.is_dir()),
+    key=lambda d: d.name,
+    reverse=True,
+  )
+  for run_dir in run_dirs:
+    checkpoints = list(run_dir.glob("model_*.pt"))
+    if checkpoints:
+      # Pick the highest iteration checkpoint.
+      best = max(checkpoints, key=lambda p: int(p.stem.split("_")[1]))
+      return best
+  raise FileNotFoundError(
+    f"No checkpoints (model_*.pt) found in: {log_root_path}\n"
+    "Train first, or provide --checkpoint-file or --wandb-run-path."
+  )
+
+
 def run_play(task_id: str, cfg: PlayConfig):
   configure_torch_backends()
 
@@ -125,11 +150,7 @@ def run_play(task_id: str, cfg: PlayConfig):
       if not resume_path.exists():
         raise FileNotFoundError(f"Checkpoint file not found: {resume_path}")
       print(f"[INFO]: Loading checkpoint: {resume_path.name}")
-    else:
-      if cfg.wandb_run_path is None:
-        raise ValueError(
-          "`wandb_run_path` is required when `checkpoint_file` is not provided."
-        )
+    elif cfg.wandb_run_path is not None:
       resume_path, was_cached = get_wandb_checkpoint_path(
         log_root_path, Path(cfg.wandb_run_path), cfg.wandb_checkpoint_name
       )
@@ -139,6 +160,13 @@ def run_play(task_id: str, cfg: PlayConfig):
       cached_str = "cached" if was_cached else "downloaded"
       print(
         f"[INFO]: Loading checkpoint: {checkpoint_name} (run: {run_id}, {cached_str})"
+      )
+    else:
+      # Auto-discover the latest local checkpoint.
+      resume_path = _find_latest_local_checkpoint(log_root_path)
+      run_name = resume_path.parent.name
+      print(
+        f"[INFO]: Loading checkpoint: {resume_path.name} (run: {run_name})"
       )
     log_dir = resume_path.parent
 

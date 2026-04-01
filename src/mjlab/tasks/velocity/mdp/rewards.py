@@ -382,3 +382,53 @@ class variable_posture:
     error_squared = torch.square(current_joint_pos - desired_joint_pos)
 
     return torch.exp(-torch.mean(error_squared / (std**2), dim=1))
+
+
+def track_joint_position_command_l1(
+  env: ManagerBasedRlEnv,
+  command_name: str,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Reward for tracking the commanded joint position (L1 distance)."""
+  asset: Entity = env.scene[asset_cfg.name]
+  command = env.command_manager.get_command(command_name)
+  assert command is not None
+  actual = asset.data.joint_pos[:, asset_cfg.joint_ids]
+  joint_error = actual - command
+  return -torch.sum(torch.abs(joint_error), dim=1)
+
+
+def track_compliant_joint_position_command_l1(
+  env: ManagerBasedRlEnv,
+  command_name: str,
+  compliance_command_name: str,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Reward for tracking commanded joint positions + compliance deformations.
+
+  The desired position is ``command + deformation``, where the deformation
+  comes from the compliance MSD model.  Only the MSD-active joints that
+  overlap with ``asset_cfg.joint_ids`` are shifted.
+  """
+  asset: Entity = env.scene[asset_cfg.name]
+  command = env.command_manager.get_command(command_name)
+  assert command is not None
+
+  compliance_cmd = env.command_manager.get_term(compliance_command_name)
+  msd = compliance_cmd._manager._msd_system
+  deformations = compliance_cmd._manager.deformations  # (num_envs, n_active)
+
+  # Map MSD active joint indices into the reward's joint subset.
+  # asset_cfg.joint_ids: entity-local indices used by this reward.
+  # msd.active_idx: entity-local indices of MSD-active joints.
+  joint_ids = list(asset_cfg.joint_ids)
+  desired = command.clone()
+  for msd_col, entity_joint_idx in enumerate(msd.active_idx):
+    if entity_joint_idx in joint_ids:
+      reward_col = joint_ids.index(entity_joint_idx)
+      desired[:, reward_col] += deformations[:, msd_col]
+
+  actual = asset.data.joint_pos[:, asset_cfg.joint_ids]
+  joint_error = actual - desired
+  return -torch.sum(torch.abs(joint_error), dim=1)
+
