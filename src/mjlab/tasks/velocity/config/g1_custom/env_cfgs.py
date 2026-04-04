@@ -146,8 +146,9 @@ def unitree_g1_custom_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
 
   # Variable stiffness command (resampled every 10 s).
   cfg.commands["stiffness"] = StiffnessCommandCfg(
-    resampling_time_range=(10.0, 10.0),
-    stiffness_range=(30.0, 30.0),
+    resampling_time_range=(5.0, 10.0),
+    # resampling_time_range=(10.0, 10.0),
+    stiffness_range=(30.0, 60.0), # (30.0, 30.0),
     initial_stiffness=10.0,
   )
 

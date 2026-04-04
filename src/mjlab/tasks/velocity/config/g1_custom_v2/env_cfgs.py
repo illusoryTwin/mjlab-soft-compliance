@@ -31,16 +31,15 @@ PERTURBED_BODIES = (
     "left_wrist_roll_link",
     "left_wrist_pitch_link",
     "left_wrist_yaw_link",
-    # # Right arm.
-    # "right_shoulder_pitch_link",
-    # "right_shoulder_roll_link",
-    # "right_shoulder_yaw_link",
-    # "right_elbow_link",
-    # "right_wrist_roll_link",
-    # "right_wrist_pitch_link",
-    # "right_wrist_yaw_link",
+    # Right arm.
+    "right_shoulder_pitch_link",
+    "right_shoulder_roll_link",
+    "right_shoulder_yaw_link",
+    "right_elbow_link",
+    "right_wrist_roll_link",
+    "right_wrist_pitch_link",
+    "right_wrist_yaw_link",
 )
-
 
 def unitree_g1_custom_v2_env_cfg(
     play: bool = False,
@@ -53,9 +52,9 @@ def unitree_g1_custom_v2_env_cfg(
 
     # Variable stiffness command (resampled every 10 s).
     cfg.commands["stiffness"] = StiffnessCommandCfg(
-        resampling_time_range=(10.0, 10.0),
+        resampling_time_range=(3.0, 10.0), # (10.0, 10.0),
         stiffness_range=(30.0, 30.0),
-        initial_stiffness=10.0,
+        initial_stiffness=30.0, # 10.0,
     )
 
 

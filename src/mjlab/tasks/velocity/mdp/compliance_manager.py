@@ -20,21 +20,21 @@ class ComplianceManagerCfg:
 
     stiffness_config: Dict[str, float] = field(
         default_factory=lambda: {
-            "waist_yaw_joint": 1.0,
+            "waist_yaw_joint": 2.5, # 1.5, # 1.0,
             "left_shoulder_pitch_joint": 0.1, # 0.4,
-            # "right_shoulder_pitch_joint": 0.4,
+            "right_shoulder_pitch_joint": 0.1, # 0.4,
             "left_shoulder_roll_joint": 0.1, # 0.4,
-            # "right_shoulder_roll_joint": 0.4,
+            "right_shoulder_roll_joint": 0.1, # 0.4,
             "left_shoulder_yaw_joint": 0.1, # 0.4,
-            # "right_shoulder_yaw_joint": 0.4,
-            "left_elbow_joint": 0.75, # 0.3,
-            # "right_elbow_joint": 0.3,
-            "left_wrist_roll_joint": 0.2,
-            # "right_wrist_roll_joint": 0.2,
-            "left_wrist_pitch_joint": 0.2,
-            # "right_wrist_pitch_joint": 0.2,
-            "left_wrist_yaw_joint": 0.2,
-            # "right_wrist_yaw_joint": 0.2,
+            "right_shoulder_yaw_joint": 0.1, # 0.4,
+            "left_elbow_joint": 0.075, # 0.3,
+            "right_elbow_joint": 0.075, # 0.3,
+            "left_wrist_roll_joint": 0.075, # 0.2,
+            "right_wrist_roll_joint": 0.075, # 0.2,
+            "left_wrist_pitch_joint": 0.075, # 0.2,
+            "right_wrist_pitch_joint": 0.075, # 0.2,
+            "left_wrist_yaw_joint": 0.075, # 0.2,
+            "right_wrist_yaw_joint": 0.075, #  0.2,
         }
     ) 
     dt: float = 0.02 
