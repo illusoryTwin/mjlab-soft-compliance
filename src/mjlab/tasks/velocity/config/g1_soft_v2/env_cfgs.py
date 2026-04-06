@@ -45,7 +45,7 @@ PERTURBED_BODIES = (
 )
 
 
-def unitree_g1_soft_env_cfg(
+def unitree_g1_soft_v2_env_cfg(
   play: bool = False,
 ) -> ManagerBasedRlEnvCfg:
   """Unitree G1 soft-compliance: flat + arms + phased curriculum."""
@@ -157,9 +157,9 @@ def unitree_g1_soft_env_cfg(
 
   # ── Variable stiffness command (resampled every 10 s) ──
   cfg.commands["stiffness"] = StiffnessCommandCfg(
-    resampling_time_range=(3.0, 10.0), # 10.0, 10.0),
-    stiffness_range=(30.0, 40.0), # 50.0), # 40.0, 40.0),
-    initial_stiffness=30.0, # 40.0, # 10.0,
+    resampling_time_range=(6.0, 10.0), # 10.0, 10.0),
+    stiffness_range=(40.0, 60.0), # 40.0, 40.0),
+    initial_stiffness=40.0, # 10.0,
   )
 
   # ── Compliance command (MSD deformations from external forces) ──
