@@ -149,7 +149,7 @@ def main():
   )
   del remaining_args
 
-  run_export(task_id=chosen_task, args=args)
+  run_export(task_id=chosen_task, cfg=args)
 
 
 if __name__ == "__main__":
