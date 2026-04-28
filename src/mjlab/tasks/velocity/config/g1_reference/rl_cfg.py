@@ -7,7 +7,7 @@ from mjlab.rl import (
 )
 
 
-def unitree_g1_custom_ppo_runner_cfg() -> RslRlOnPolicyRunnerCfg:
+def unitree_g1_reference_ppo_runner_cfg() -> RslRlOnPolicyRunnerCfg:
   """Create RL runner configuration for Unitree G1 velocity task."""
   return RslRlOnPolicyRunnerCfg(
     actor=RslRlModelCfg(
@@ -38,7 +38,7 @@ def unitree_g1_custom_ppo_runner_cfg() -> RslRlOnPolicyRunnerCfg:
       desired_kl=0.01,
       max_grad_norm=1.0,
     ),
-    experiment_name="g1_custom",
+    experiment_name="g1_reference",
     save_interval=50,
     num_steps_per_env=24,
     max_iterations=30_000,

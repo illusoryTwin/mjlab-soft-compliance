@@ -4,13 +4,14 @@ Restored version matching the state at 2026-04-01_13-47-20.
 """
 
 from mjlab.envs import ManagerBasedRlEnvCfg
+from mjlab.managers.curriculum_manager import CurriculumTermCfg
 from mjlab.managers.event_manager import EventTermCfg
 from mjlab.managers.observation_manager import ObservationTermCfg
 from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.tasks.velocity import mdp
 from mjlab.tasks.velocity.config.g1.env_cfgs import unitree_g1_flat_env_cfg
-from mjlab.tasks.velocity.config.g1_custom.events import (
+from mjlab.tasks.velocity.mdp.compliance_events import (
   apply_compliance_forces,
   apply_compliance_torques,
   apply_constant_torque,
@@ -42,7 +43,7 @@ PERTURBED_BODIES = (
 )
 
 
-def unitree_g1_custom_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
+def unitree_g1_reference_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   """Unitree G1 with compliance push event."""
   cfg = unitree_g1_flat_env_cfg(play=play)
 
@@ -116,7 +117,7 @@ def unitree_g1_custom_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   # New rewards
   cfg.rewards["joint_pos_tracking"] = RewardTermCfg(
     func=mdp.track_joint_position_command_l1, # track_compliant_joint_position_command_l1,
-    weight=0.1, # 1.0,
+    weight=0.0, # 0.1, # 1.0,
     params={
       "command_name": "joint_pos",
       # "compliance_command_name": "compliance",
@@ -180,6 +181,20 @@ def unitree_g1_custom_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
       },
   )
 
+  cfg.curriculum["joint_pos_tracking_weight"] = CurriculumTermCfg(
+    func=mdp.reward_weight,
+    params={
+      "reward_name": "joint_pos_tracking",
+      "weight_stages": [
+        {"step": 0, "weight": 0.0},
+        {"step": 60_000, "weight": 0.1},
+        {"step": 90_000, "weight": 0.3},
+        {"step": 120_000, "weight": 0.5},
+        {"step": 180_000, "weight": 1.0},
+      ],
+    },
+  )
+
   return cfg
 
 
@@ -193,7 +208,7 @@ def unitree_g1_custom_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
 # from mjlab.managers.scene_entity_config import SceneEntityCfg
 # from mjlab.tasks.velocity import mdp
 # from mjlab.tasks.velocity.config.g1.env_cfgs import unitree_g1_flat_env_cfg
-# from mjlab.tasks.velocity.config.g1_custom.events import (
+# from mjlab.tasks.velocity.mdp.compliance_events import (
 #   apply_compliance_forces,
 #   apply_compliance_torques,
 #   apply_constant_torque,
@@ -225,7 +240,7 @@ def unitree_g1_custom_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
 # )
 
 
-# def unitree_g1_custom_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
+# def unitree_g1_reference_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
 #   """Unitree G1 with compliance push event."""
 #   cfg = unitree_g1_flat_env_cfg(play=play)
 

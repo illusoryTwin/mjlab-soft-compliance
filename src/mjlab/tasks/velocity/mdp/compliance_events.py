@@ -1,4 +1,4 @@
-"""Event functions for compliance training."""
+"""Event callables for compliance-related external wrenches (forces/torques)."""
 
 from __future__ import annotations
 

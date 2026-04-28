@@ -2,7 +2,7 @@
 
 Flat-terrain standing with arm joint-position tracking and phased
 compliance curriculum.  Based directly on ``unitree_g1_flat_env_cfg``
-(no intermediate g1_custom dependency).
+(no intermediate g1_reference dependency).
 
 Phase 1 (0 -> 60k steps):   pure joint position tracking.
 Phase 2 (60k -> 180k steps): crossfade to compliant tracking.
@@ -16,9 +16,7 @@ from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.tasks.velocity import mdp
 from mjlab.tasks.velocity.config.g1.env_cfgs import unitree_g1_flat_env_cfg
-from mjlab.tasks.velocity.config.g1_custom.events import (
-  apply_compliance_forces,
-)
+from mjlab.tasks.velocity.mdp.compliance_events import apply_compliance_forces
 from mjlab.tasks.velocity.mdp import JointPositionCommandCfg
 from mjlab.tasks.velocity.mdp.compliance_command import ComplianceCommandCfg
 from mjlab.tasks.velocity.mdp.compliance_manager import ComplianceManagerCfg
