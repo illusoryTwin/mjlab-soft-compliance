@@ -31,14 +31,14 @@ PERTURBED_BODIES = (
   "left_wrist_pitch_link",
   "left_wrist_yaw_link",
 
-  # # Right arm.
-  # "right_shoulder_pitch_link",
-  # "right_shoulder_roll_link",
-  # "right_shoulder_yaw_link",
-  # "right_elbow_link",
-  # "right_wrist_roll_link",
-  # "right_wrist_pitch_link",
-  # "right_wrist_yaw_link",
+  # Right arm.
+  "right_shoulder_pitch_link",
+  "right_shoulder_roll_link",
+  "right_shoulder_yaw_link",
+  "right_elbow_link",
+  "right_wrist_roll_link",
+  "right_wrist_pitch_link",
+  "right_wrist_yaw_link",
 )
 
 
@@ -61,10 +61,10 @@ def unitree_g1_custom_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
     func=mdp.generated_commands,
     params={"command_name": "joint_pos"},
   )
-  cfg.observations["critic"].terms["compliance_deformations"] = ObservationTermCfg(
-    func=mdp.generated_commands,
-    params={"command_name": "compliance"},
-  )
+  # cfg.observations["critic"].terms["compliance_deformations"] = ObservationTermCfg(
+  #   func=mdp.generated_commands,
+  #   params={"command_name": "compliance"},
+  # )
 
   # New commands
   cfg.commands["joint_pos"] = JointPositionCommandCfg(
@@ -110,16 +110,16 @@ def unitree_g1_custom_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
     smooth_sampling=False,
     sampling_frequency_range=(0.0, 0.4),
     debug_vis=True,
-    compliance_command_name="compliance", # only for visualization
+    # compliance_command_name="compliance", # only for visualization
   )
 
   # New rewards
-  cfg.rewards["compliant_joint_pos_tracking"] = RewardTermCfg(
-    func=mdp.track_compliant_joint_position_command_l1,
+  cfg.rewards["joint_pos_tracking"] = RewardTermCfg(
+    func=mdp.track_joint_position_command_l1, # track_compliant_joint_position_command_l1,
     weight=0.1, # 1.0,
     params={
       "command_name": "joint_pos",
-      "compliance_command_name": "compliance",
+      # "compliance_command_name": "compliance",
       "asset_cfg": SceneEntityCfg(
         "robot",
         joint_names=(
@@ -144,22 +144,22 @@ def unitree_g1_custom_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
     },
   )
 
-  # Variable stiffness command (resampled every 10 s).
-  cfg.commands["stiffness"] = StiffnessCommandCfg(
-    resampling_time_range=(5.0, 10.0),
-    # resampling_time_range=(10.0, 10.0),
-    stiffness_range=(30.0, 60.0), # (30.0, 30.0),
-    initial_stiffness=10.0,
-  )
+  # # Variable stiffness command (resampled every 10 s).
+  # cfg.commands["stiffness"] = StiffnessCommandCfg(
+  #   resampling_time_range=(5.0, 10.0),
+  #   # resampling_time_range=(10.0, 10.0),
+  #   stiffness_range=(30.0, 60.0), # (30.0, 30.0),
+  #   initial_stiffness=10.0,
+  # )
 
-  # Compliance command (MSD deformations from external forces).
-  cfg.commands["compliance"] = ComplianceCommandCfg(
-    resampling_time_range=(1e9, 1e9),  # never resample
-    stiffness_command_name="stiffness",
-    compliance=ComplianceManagerCfg(
-      monitored_bodies=list(PERTURBED_BODIES),
-    ),
-  )
+  # # Compliance command (MSD deformations from external forces).
+  # cfg.commands["compliance"] = ComplianceCommandCfg(
+  #   resampling_time_range=(1e9, 1e9),  # never resample
+  #   stiffness_command_name="stiffness",
+  #   compliance=ComplianceManagerCfg(
+  #     monitored_bodies=list(PERTURBED_BODIES),
+  #   ),
+  # )
 
   # ── Apply forces to one of the arm bodies ──
   cfg.events["compliance_push"] = EventTermCfg(
