@@ -45,7 +45,7 @@ class StiffnessCommand(CommandTerm):
 class StiffnessCommandCfg(CommandTermCfg):
     """Configuration for the variable stiffness command."""
 
-    stiffness_range: tuple[float, float] = (5.0, 20.0)
+    stiffness_range: tuple[float, float] = (10.0, 60.0)
     """Range ``[min, max]`` for uniform stiffness sampling."""
 
     initial_stiffness: float = 10.0

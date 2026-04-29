@@ -1,9 +1,7 @@
 """Unitree G1 soft-compliance task.
 
 Flat-terrain standing with arm joint-position tracking and phased
-compliance curriculum.  Based directly on ``unitree_g1_flat_env_cfg``
-(no intermediate g1_reference dependency).
-
+compliance curriculum:
 Phase 1 (0 -> 60k steps):   pure joint position tracking.
 Phase 2 (60k -> 180k steps): crossfade to compliant tracking.
 """
@@ -19,7 +17,9 @@ from mjlab.tasks.velocity.config.g1.env_cfgs import unitree_g1_flat_env_cfg
 from mjlab.tasks.velocity.mdp.compliance_events import apply_compliance_forces
 from mjlab.tasks.velocity.mdp import JointPositionCommandCfg
 from mjlab.tasks.velocity.mdp.compliance_command import ComplianceCommandCfg
-from mjlab.tasks.velocity.mdp.compliance_manager import ComplianceManagerCfg
+from mjlab.tasks.velocity.config.g1.compliance_params import (
+    unitree_g1_compliance_manager_cfg,
+)
 from mjlab.tasks.velocity.mdp.stiffness_command import StiffnessCommandCfg
 
 # Bodies that receive external perturbations AND are monitored by compliance.
@@ -75,7 +75,7 @@ def unitree_g1_soft_env_cfg(
     params={"command_name": "compliance"},
   )
 
-  # ── Arm joint-position command (14 DOF) ──
+  # ── Arm joint-position command ──
   cfg.commands["joint_pos"] = JointPositionCommandCfg(
     resampling_time_range=(10.0, 10.0),
     entity_name="robot",
@@ -153,19 +153,19 @@ def unitree_g1_soft_env_cfg(
     },
   )
 
-  # ── Variable stiffness command (resampled every 10 s) ──
+  # ── Variable stiffness command ──
   cfg.commands["stiffness"] = StiffnessCommandCfg(
-    resampling_time_range=(3.0, 10.0), # 10.0, 10.0),
-    stiffness_range=(30.0, 40.0), # 50.0), # 40.0, 40.0),
-    initial_stiffness=30.0, # 40.0, # 10.0,
+    resampling_time_range=(3.0, 10.0), # (10.0, 10.0)
+    stiffness_range=(30.0, 40.0),
+    initial_stiffness=30.0,
   )
 
   # ── Compliance command (MSD deformations from external forces) ──
   cfg.commands["compliance"] = ComplianceCommandCfg(
     resampling_time_range=(1e9, 1e9),  # never resample
     stiffness_command_name="stiffness",
-    compliance=ComplianceManagerCfg(
-      monitored_bodies=list(PERTURBED_BODIES),
+    compliance=unitree_g1_compliance_manager_cfg(
+        monitored_bodies=list(PERTURBED_BODIES),
     ),
   )
 

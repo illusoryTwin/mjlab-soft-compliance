@@ -70,23 +70,24 @@ class MassSpringDamperModel:
             return None, None 
 
         n = self.n_active
-        ne = self.num_envs
+        n_envs = self.num_envs
 
         A = torch.zeros(
-            ne, n * 2, n * 2, dtype=torch.float32, device=self.device
+            n_envs, n * 2, n * 2, dtype=torch.float32, device=self.device
         )
         
         # Upper-right block: I (same for all envs)
         eye_n = torch.eye(n, dtype=torch.float32, device=self.device)
         A[:, :n, n:] = eye_n
 
-        # Lower-left and lower-right blocks are per-env diagonals
         diag_idx = torch.arange(n, device=self.device)
+        # Lower-left block of matrix A
         A[:, n + diag_idx, diag_idx] = -self.K / self.M_active
+        # Lower-right block of matrix A
         A[:, n + diag_idx, n + diag_idx] = -self.D / self.M_active
 
         B = torch.zeros(
-            ne, n * 2, n, dtype=torch.float32, device=self.device
+            n_envs, n * 2, n, dtype=torch.float32, device=self.device
         )
         B[:, n + diag_idx, diag_idx] = 1.0 / self.M_active
 
@@ -106,12 +107,11 @@ class MassSpringDamperModel:
         if self.n_active == 0:
             return  # No active DOFs
 
-        # Ensure torques are on the correct device
         external_torques = external_torques.to(device=self.device)
 
         tau_active = external_torques[:, self.active_idx_torch]
 
-        # Pack state vector: x = [q_def; qd_d966ef]  ->  [num_envs, 2*n_active]
+        # Pack state vector: x = [q_def; qd_def]  ->  [num_envs, 2*n_active]
         x = torch.cat(
             [self.state["q_def"], self.state["qd_def"]], dim=1
         )

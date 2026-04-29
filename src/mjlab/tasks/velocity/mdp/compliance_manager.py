@@ -7,36 +7,32 @@ import re
 import torch
 
 
+def _g1_default_monitored_bodies() -> List[str]:
+    """Lazy import so G1 parameters stay in `config/g1/compliance_params`."""
+    from mjlab.tasks.velocity.config.g1.compliance_params import (
+        UNITREE_G1_DEFAULT_MONITORED_BODIES,
+    )
+
+    return list(UNITREE_G1_DEFAULT_MONITORED_BODIES)
+
+
+def _g1_default_stiffness_scales() -> Dict[str, float]:
+    from mjlab.tasks.velocity.config.g1.compliance_params import (
+        UNITREE_G1_STIFFNESS_SCALES,
+    )
+
+    return dict(UNITREE_G1_STIFFNESS_SCALES)
+
+
 @dataclass 
 class ComplianceManagerCfg:
     enabled: bool = True 
     robot_name: str = "robot" 
-    monitored_bodies: List[str] = field(
-        default_factory=lambda: [
-            "left_wrist_yaw_link",
-            "right_wrist_yaw_link"
-        ]
-    )
+    monitored_bodies: List[str] = field(default_factory=_g1_default_monitored_bodies)
 
     stiffness_config: Dict[str, float] = field(
-        default_factory=lambda: {
-            "waist_yaw_joint": 2.5, # 1.5, # 1.0,
-            "left_shoulder_pitch_joint": 0.1, # 0.4,
-            "right_shoulder_pitch_joint": 0.1, # 0.4,
-            "left_shoulder_roll_joint": 0.1, # 0.4,
-            "right_shoulder_roll_joint": 0.1, # 0.4,
-            "left_shoulder_yaw_joint": 0.1, # 0.4,
-            "right_shoulder_yaw_joint": 0.1, # 0.4,
-            "left_elbow_joint": 0.075, # 0.3,
-            "right_elbow_joint": 0.075, # 0.3,
-            "left_wrist_roll_joint": 0.075, # 0.2,
-            "right_wrist_roll_joint": 0.075, # 0.2,
-            "left_wrist_pitch_joint": 0.075, # 0.2,
-            "right_wrist_pitch_joint": 0.075, # 0.2,
-            "left_wrist_yaw_joint": 0.075, # 0.2,
-            "right_wrist_yaw_joint": 0.075, #  0.2,
-        }
-    ) 
+        default_factory=_g1_default_stiffness_scales,
+    )
     dt: float = 0.02 
     base_stiffness: float = 10.0 # 60.0
     base_inertia: float = 0.5
@@ -134,12 +130,12 @@ class ComplianceManager:
             jacp = self._jacp_torch[:, :, joint_dof_ids] 
             jacr = self._jacr_torch[:, :, joint_dof_ids]
 
-            f = body_force[:, local_body_id]
-            t = body_torque[:, local_body_id]
+            forces = body_force[:, local_body_id]
+            torques = body_torque[:, local_body_id]
 
             total_tau += (
-                torch.bmm(jacp.transpose(1, 2), f.unsqueeze(-1)).squeeze(-1)
-                + torch.bmm(jacr.transpose(1, 2), t.unsqueeze(-1)).squeeze(-1)
+                torch.bmm(jacp.transpose(1, 2), forces.unsqueeze(-1)).squeeze(-1)
+                + torch.bmm(jacr.transpose(1, 2), torques.unsqueeze(-1)).squeeze(-1)
             )
 
         return total_tau

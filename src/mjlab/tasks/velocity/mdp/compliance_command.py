@@ -28,7 +28,7 @@ class ComplianceCommand(CommandTerm):
     entity: Entity = env.scene[cfg.entity_name]
     self._manager = ComplianceManager(cfg.compliance, entity, env)
 
-    # Joint names for the active MSD DOFs (used in metric keys).
+    # Joint names for the active MSD DOFs
     active_idx = self._manager._msd_system.active_idx
     self._active_joint_names = [entity.joint_names[i] for i in active_idx]
 
