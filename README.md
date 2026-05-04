@@ -61,6 +61,12 @@ Evaluate a policy while training (fetches latest checkpoint from Weights & Biase
 uv run play Mjlab-Velocity-Flat-Unitree-G1 --wandb-run-path your-org/mjlab/run-id
 ```
 
+Short screen captures (compressed for the repo; full-resolution exports stay out of git):
+
+| Default (stiff) | Soft (compliance) |
+| :---: | :---: |
+| ![G1 velocity policy, default](docs/source/_static/g1_default_demo.gif) | ![G1 velocity policy, soft](docs/source/_static/g1_soft_demo.gif) |
+
 ### 2. Motion Imitation
 
 Train a humanoid to mimic reference motions. mjlab uses WandB to manage motion datasets.
@@ -81,7 +87,6 @@ uv run play Mjlab-Your-Task-Id --agent random  # Sends uniform random actions
 ```
 
 When running motion-tracking tasks, add `--registry-name your-org/motions/motion-name` to the command.
-
 
 ## Documentation
 
