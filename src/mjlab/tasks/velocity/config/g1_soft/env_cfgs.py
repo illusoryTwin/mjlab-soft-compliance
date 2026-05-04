@@ -154,10 +154,16 @@ def unitree_g1_soft_env_cfg(
   )
 
   # ── Variable stiffness command ──
+  #cfg.commands["stiffness"] = StiffnessCommandCfg(
+   # resampling_time_range=(3.0, 10.0), # (10.0, 10.0)
+   # stiffness_range=(20.0, 60.0), # (30.0, 40.0),
+   # initial_stiffness=30.0,
+  #)
+
   cfg.commands["stiffness"] = StiffnessCommandCfg(
-    resampling_time_range=(3.0, 10.0), # (10.0, 10.0)
-    stiffness_range=(30.0, 40.0),
-    initial_stiffness=30.0,
+    resampling_time_range=(10.0, 10.0), # (10.0, 10.0)
+    base_stiffness=10.0,
+    stiffness_multipliers=(2.5, 3.75, 5.0, 6.25, 7.5),
   )
 
   # ── Compliance command (MSD deformations from external forces) ──

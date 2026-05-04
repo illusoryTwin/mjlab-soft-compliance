@@ -50,6 +50,13 @@ class ComplianceCommand(CommandTerm):
       log[f"Compliance/deformation/{name}"] = q_def[i]
       log[f"Compliance/deformation_vel/{name}"] = qd_def[i]
       log[f"Compliance/ext_torque/{name}"] = ext_tau[active_idx[i]]
+      log[f"Compliance/msd/M/{name}"] = msd.M_active[i]
+      log[f"Compliance/msd/K/{name}"] = msd.K[0, i]
+      log[f"Compliance/msd/D/{name}"] = msd.D[0, i]
+      log[f"Compliance/msd/q/{name}"] = q_def[i]
+      log[f"Compliance/msd/qd/{name}"] = qd_def[i]
+      log[f"Compliance/msd/qdd/{name}"] = msd._last_qdd[0, i]
+      log[f"Compliance/msd/tau/{name}"] = msd._last_tau_active[0, i]
 
     # Log external body forces on monitored bodies for env 0.
     entity = self._manager._entity

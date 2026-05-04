@@ -29,7 +29,10 @@ class MassSpringDamperModel:
         )
 
         self._set_stiffness(base_stiffness)
-        self.state = self._create_msd_state()   
+        self.state = self._create_msd_state()
+        z = (self.num_envs, self.n_active)
+        self._last_qdd = torch.zeros(z, dtype=torch.float32, device=device)
+        self._last_tau_active = torch.zeros(z, dtype=torch.float32, device=device)
 
     def set_stiffness(self, base_stiffness: float | torch.Tensor):
         """Update base stiffness and recompute MSD matrices."""
@@ -110,6 +113,11 @@ class MassSpringDamperModel:
         external_torques = external_torques.to(device=self.device)
 
         tau_active = external_torques[:, self.active_idx_torch]
+        M_b = self.M_active.unsqueeze(0)
+        self._last_qdd[:] = (
+            tau_active - self.D * self.state["qd_def"] - self.K * self.state["q_def"]
+        ) / M_b
+        self._last_tau_active[:] = tau_active
 
         # Pack state vector: x = [q_def; qd_def]  ->  [num_envs, 2*n_active]
         x = torch.cat(
@@ -132,6 +140,12 @@ class MassSpringDamperModel:
         if env_ids is None:
             self.state["q_def"][:] = 0.0
             self.state["qd_def"][:] = 0.0
+            if self.n_active > 0:
+                self._last_qdd[:] = 0.0
+                self._last_tau_active[:] = 0.0
         else:
             self.state["q_def"][env_ids] = 0.0
             self.state["qd_def"][env_ids] = 0.0
+            if self.n_active > 0:
+                self._last_qdd[env_ids] = 0.0
+                self._last_tau_active[env_ids] = 0.0
