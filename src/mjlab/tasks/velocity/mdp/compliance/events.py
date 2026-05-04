@@ -37,7 +37,6 @@ class apply_constant_torque:
     )
 
     torque = cfg.params["torque"]
-    # Constant torque tensor: (num_envs, num_bodies, 3).
     self._torque = (
       torch.tensor(torque, device=self._device, dtype=torch.float32)
       .unsqueeze(0)
@@ -115,27 +114,22 @@ class apply_compliance_torques:
     self._min_hold: float = cfg.params.get("min_hold_duration", 2.0)
     self._max_hold: float = cfg.params.get("max_hold_duration", 6.0)
 
-    # Current random direction per (env, body, axis) in [-1, 1].
     self._current_directions = torch.zeros(
       (self._num_envs, self._num_bodies, 3), device=self._device
     )
-    # Per-env hold timer (seconds remaining before resample).
     self._hold_timers = torch.zeros(
       self._num_envs, device=self._device
     )
     self._resample_values(slice(None), self._num_envs)
 
-    # Per-env body mask: 1 = torque applied, 0 = no torque.
     self._body_mask = torch.ones(
       (self._num_envs, self._num_bodies, 1), device=self._device
     )
     if self._random_bodies:
       self._randomize_body_mask(slice(None), self._num_envs)
 
-    # Random duty-cycle offset per env so on/off windows are staggered.
     self._duty_offsets = torch.zeros(self._num_envs, device=self._device)
 
-    # Step counter for time computation.
     self._step_count = 0
 
   def _resample_values(
@@ -190,7 +184,6 @@ class apply_compliance_torques:
     t = self._step_count * self._step_dt
     self._step_count += 1
 
-    # Decrement hold timers and resample expired envs.
     self._hold_timers -= self._step_dt
     expired = self._hold_timers <= 0
     if expired.any():
@@ -199,10 +192,8 @@ class apply_compliance_torques:
       if self._random_bodies:
         self._randomize_body_mask(expired_ids, len(expired_ids))
 
-    # Piecewise-constant torques: (num_envs, num_bodies, 3).
     torques = torque_amplitude * self._current_directions
 
-    # Apply duty-cycle mask (on/off toggling).
     use_duty_cycle = on_duration > 0 and off_duration > 0
     if use_duty_cycle:
       cycle_period = on_duration + off_duration
@@ -210,7 +201,6 @@ class apply_compliance_torques:
       active_mask = (t_in_cycle < on_duration).float()
       torques = torques * active_mask[:, None, None]
 
-    # Apply per-env random body mask.
     torques = torques * self._body_mask
 
     forces = torch.zeros_like(torques)
@@ -223,8 +213,8 @@ class apply_compliance_torques:
     """Draw arrows for active compliance torques."""
     viz = self._viz_cfg
     min_sq = viz.min_torque * viz.min_torque
-    wrench = self._asset.data.body_external_wrench  # (nworld, nbody, 6)
-    com_pos = self._asset.data.body_com_pos_w  # (nworld, nbody, 3)
+    wrench = self._asset.data.body_external_wrench
+    com_pos = self._asset.data.body_com_pos_w
     for env_idx in visualizer.get_env_indices(self._num_envs):
       body_ids = (
         self._body_ids
@@ -260,7 +250,6 @@ class apply_compliance_torques:
     if self._random_bodies:
       self._randomize_body_mask(env_ids, n)
 
-    # Zero out torques for reset envs.
     zeros = torch.zeros((n, self._num_bodies, 3), device=self._device)
     self._asset.write_external_wrench_to_sim(
       zeros, zeros, env_ids=env_ids, body_ids=self._body_ids
@@ -319,27 +308,22 @@ class apply_compliance_forces:
     self._min_hold: float = cfg.params.get("min_hold_duration", 2.0)
     self._max_hold: float = cfg.params.get("max_hold_duration", 6.0)
 
-    # Current random direction per (env, body, axis) in [-1, 1].
     self._current_directions = torch.zeros(
       (self._num_envs, self._num_bodies, 3), device=self._device
     )
-    # Per-env hold timer (seconds remaining before resample).
     self._hold_timers = torch.zeros(
       self._num_envs, device=self._device
     )
     self._resample_values(slice(None), self._num_envs)
 
-    # Per-env body mask: 1 = force applied, 0 = no force.
     self._body_mask = torch.ones(
       (self._num_envs, self._num_bodies, 1), device=self._device
     )
     if self._random_bodies:
       self._randomize_body_mask(slice(None), self._num_envs)
 
-    # Random duty-cycle offset per env so on/off windows are staggered.
     self._duty_offsets = torch.zeros(self._num_envs, device=self._device)
 
-    # Step counter for time computation.
     self._step_count = 0
 
   def _resample_values(
@@ -394,7 +378,6 @@ class apply_compliance_forces:
     t = self._step_count * self._step_dt
     self._step_count += 1
 
-    # Decrement hold timers and resample expired envs.
     self._hold_timers -= self._step_dt
     expired = self._hold_timers <= 0
     if expired.any():
@@ -403,10 +386,8 @@ class apply_compliance_forces:
       if self._random_bodies:
         self._randomize_body_mask(expired_ids, len(expired_ids))
 
-    # Piecewise-constant forces: (num_envs, num_bodies, 3).
     forces = force_amplitude * self._current_directions
 
-    # Apply duty-cycle mask (on/off toggling).
     use_duty_cycle = on_duration > 0 and off_duration > 0
     if use_duty_cycle:
       cycle_period = on_duration + off_duration
@@ -414,7 +395,6 @@ class apply_compliance_forces:
       active_mask = (t_in_cycle < on_duration).float()
       forces = forces * active_mask[:, None, None]
 
-    # Apply per-env random body mask.
     forces = forces * self._body_mask
 
     torques = torch.zeros_like(forces)
@@ -427,8 +407,8 @@ class apply_compliance_forces:
     """Draw arrows for active compliance forces."""
     viz = self._viz_cfg
     min_sq = viz.min_force * viz.min_force
-    wrench = self._asset.data.body_external_wrench  # (nworld, nbody, 6)
-    com_pos = self._asset.data.body_com_pos_w  # (nworld, nbody, 3)
+    wrench = self._asset.data.body_external_wrench
+    com_pos = self._asset.data.body_com_pos_w
     for env_idx in visualizer.get_env_indices(self._num_envs):
       body_ids = (
         self._body_ids
@@ -464,7 +444,6 @@ class apply_compliance_forces:
     if self._random_bodies:
       self._randomize_body_mask(env_ids, n)
 
-    # Zero out forces for reset envs.
     zeros = torch.zeros((n, self._num_bodies, 3), device=self._device)
     self._asset.write_external_wrench_to_sim(
       zeros, zeros, env_ids=env_ids, body_ids=self._body_ids

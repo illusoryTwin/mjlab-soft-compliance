@@ -1,6 +1,6 @@
 from mjlab.envs.mdp import *  # noqa: F401, F403
 
-from .compliance_command import *  # noqa: F403
+from .compliance import *  # noqa: F403
 from .curriculums import *  # noqa: F403
 from .joint_position_command import *  # noqa: F403
 from .observations import *  # noqa: F403

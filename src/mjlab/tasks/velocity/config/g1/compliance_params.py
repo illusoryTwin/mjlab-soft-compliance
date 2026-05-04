@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Sequence
 
-from mjlab.tasks.velocity.mdp.compliance_manager import ComplianceManagerCfg
+from mjlab.tasks.velocity.mdp.compliance.manager import ComplianceManagerCfg
 
 
 # Those links are where external disturbances show up as body wrenches, 

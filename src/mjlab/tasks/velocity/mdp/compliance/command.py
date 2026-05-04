@@ -9,7 +9,7 @@ import torch
 
 from mjlab.entity import Entity
 from mjlab.managers.command_manager import CommandTerm, CommandTermCfg
-from mjlab.tasks.velocity.mdp.compliance_manager import (
+from mjlab.tasks.velocity.mdp.compliance.manager import (
   ComplianceManager,
   ComplianceManagerCfg,
 )
@@ -28,20 +28,34 @@ class ComplianceCommand(CommandTerm):
     entity: Entity = env.scene[cfg.entity_name]
     self._manager = ComplianceManager(cfg.compliance, entity, env)
 
-    # Joint names for the active MSD DOFs
-    active_idx = self._manager._msd_system.active_idx
+    active_idx = self.active_joint_indices()
     self._active_joint_names = [entity.joint_names[i] for i in active_idx]
+
+  def deformations(self) -> torch.Tensor:
+    return self._manager.deformations
+
+  def deformation_velocities(self) -> torch.Tensor:
+    return self._manager.deformation_velocities
+
+  def active_joint_indices(self) -> tuple[int, ...]:
+    return self._manager.active_joint_entity_indices
+
+  def active_joint_indices_torch(self) -> torch.Tensor:
+    return self._manager.active_joint_entity_indices_torch
+
+  def joint_torques_from_disturbance(self) -> torch.Tensor:
+    return self._manager.joint_torques_from_disturbance()
 
   @property
   def command(self) -> torch.Tensor:
-    return self._manager.deformations
+    return self.deformations()
 
   def _update_metrics(self) -> None:
     msd = self._manager._msd_system
-    q_def = msd.state["q_def"][0]  # env 0, (n_active,)
-    qd_def = msd.state["qd_def"][0]
-    ext_tau = self._manager.last_joint_torques[0]  # (num_joints,)
-    active_idx = msd.active_idx_torch
+    q_def = self.deformations()[0]
+    qd_def = self.deformation_velocities()[0]
+    ext_tau = self.joint_torques_from_disturbance()[0]
+    active_idx = self.active_joint_indices_torch()
 
     log = self._env.extras.get("log")
     if log is None:
@@ -58,10 +72,9 @@ class ComplianceCommand(CommandTerm):
       log[f"Compliance/msd/qdd/{name}"] = msd._last_qdd[0, i]
       log[f"Compliance/msd/tau/{name}"] = msd._last_tau_active[0, i]
 
-    # Log external body forces on monitored bodies for env 0.
     entity = self._manager._entity
-    body_force = entity.data.body_external_force[0]  # (num_bodies, 3)
-    body_torque = entity.data.body_external_torque[0]  # (num_bodies, 3)
+    body_force = entity.data.body_external_force[0]
+    body_torque = entity.data.body_external_torque[0]
     for body_id, body_name in zip(
       self._manager._body_ids, self._manager._body_names, strict=False
     ):
@@ -75,7 +88,6 @@ class ComplianceCommand(CommandTerm):
       log[f"Forces/{body_name}/ty"] = t[1]
       log[f"Forces/{body_name}/tz"] = t[2]
 
-    # Log computed compliance joint torques for all joints for env 0.
     for j, jname in enumerate(entity.joint_names):
       log[f"Compliance/joint_torque/{jname}"] = ext_tau[j]
 
@@ -87,8 +99,9 @@ class ComplianceCommand(CommandTerm):
       stiffness = self._env.command_manager.get_command(
         self.cfg.stiffness_command_name
       )
-      self._manager._msd_system.set_stiffness(stiffness[:, 0])
+      self._manager.set_msd_base_stiffness(stiffness[:, 0])
     self._manager.compute()
+
 
 @dataclass(kw_only=True)
 class ComplianceCommandCfg(CommandTermCfg):

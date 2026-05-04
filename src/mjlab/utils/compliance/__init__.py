@@ -1,4 +1,4 @@
-"""Backward-compatible re-exports; prefer ``mjlab.utils.compliance.mass_spring_damper``."""
+"""Robot-agnostic compliance dynamics helpers."""
 
 from mjlab.utils.compliance.mass_spring_damper import MassSpringDamperModel
 

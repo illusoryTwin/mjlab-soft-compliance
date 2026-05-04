@@ -416,11 +416,10 @@ def track_compliant_joint_position_command_l1(
 
   compliance_cmd = env.command_manager.get_term(compliance_command_name)
   msd = compliance_cmd._manager._msd_system
-  deformations = compliance_cmd._manager.deformations  # (num_envs, n_active)
+  deformations = compliance_cmd._manager.deformations
 
   # Map MSD active joint indices into the reward's joint subset.
   # asset_cfg.joint_ids: indices used by this reward.
-  # msd.active_idx: indices of MSD-active joints.
   joint_ids = list(asset_cfg.joint_ids)
   desired = command.clone()
   for msd_col, entity_joint_idx in enumerate(msd.active_idx):

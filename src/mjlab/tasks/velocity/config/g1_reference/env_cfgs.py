@@ -9,14 +9,14 @@ from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.tasks.velocity import mdp
 from mjlab.tasks.velocity.config.g1.env_cfgs import unitree_g1_flat_env_cfg
-from mjlab.tasks.velocity.mdp.compliance_events import (
+from mjlab.tasks.velocity.mdp.compliance.events import (
   apply_compliance_forces,
   apply_compliance_torques,
   apply_constant_torque,
 )
 from mjlab.tasks.velocity.mdp import JointPositionCommandCfg
-from mjlab.tasks.velocity.mdp.compliance_command import ComplianceCommandCfg
-from mjlab.tasks.velocity.mdp.compliance_manager import ComplianceManagerCfg
+from mjlab.tasks.velocity.mdp.compliance.command import ComplianceCommandCfg
+from mjlab.tasks.velocity.mdp.compliance.manager import ComplianceManagerCfg
 from mjlab.tasks.velocity.mdp.stiffness_command import StiffnessCommandCfg
 
 # Bodies that receive external perturbations AND are monitored by compliance.

@@ -14,9 +14,9 @@ from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.tasks.velocity import mdp
 from mjlab.tasks.velocity.config.g1.env_cfgs import unitree_g1_flat_env_cfg
-from mjlab.tasks.velocity.mdp.compliance_events import apply_compliance_forces
+from mjlab.tasks.velocity.mdp.compliance.events import apply_compliance_forces
 from mjlab.tasks.velocity.mdp import JointPositionCommandCfg
-from mjlab.tasks.velocity.mdp.compliance_command import ComplianceCommandCfg
+from mjlab.tasks.velocity.mdp.compliance.command import ComplianceCommandCfg
 from mjlab.tasks.velocity.config.g1.compliance_params import (
     unitree_g1_compliance_manager_cfg,
 )

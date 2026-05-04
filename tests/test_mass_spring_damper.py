@@ -298,7 +298,7 @@ G1_JOINT_NAMES = (
 
 def _make_g1_msd(device, num_envs=2):
   """Build MSD from G1 stiffness config, same as ComplianceManager would."""
-  from mjlab.tasks.velocity.mdp.compliance_manager import (
+  from mjlab.tasks.velocity.mdp.compliance.manager import (
     ComplianceManager,
     ComplianceManagerCfg,
   )
@@ -321,7 +321,7 @@ def _make_g1_msd(device, num_envs=2):
 
 def test_g1_stiffness_scales_match_config(device):
   """Every configured joint should appear in scales with correct value."""
-  from mjlab.tasks.velocity.mdp.compliance_manager import (
+  from mjlab.tasks.velocity.mdp.compliance.manager import (
     ComplianceManager,
     ComplianceManagerCfg,
   )
@@ -367,22 +367,33 @@ def test_setup_msd_system_via_compliance_manager(device):
   """Test _setup_msd_system is called correctly through ComplianceManager."""
   from types import SimpleNamespace
 
-  from mjlab.tasks.velocity.mdp.compliance_manager import (
+  from mjlab.tasks.velocity.mdp.compliance.manager import (
     ComplianceManager,
     ComplianceManagerCfg,
   )
 
   cfg = ComplianceManagerCfg()
   num_envs = 2
+  n_joints = len(G1_JOINT_NAMES)
   fake_env = SimpleNamespace(
-    device=device, num_envs=num_envs,
+    device=device,
+    num_envs=num_envs,
+    sim=SimpleNamespace(
+      mj_model=SimpleNamespace(nv=n_joints),
+      wp_device=str(device),
+    ),
   )
   fake_entity = SimpleNamespace(
     joint_names=G1_JOINT_NAMES,
-    num_joints=len(G1_JOINT_NAMES),
+    num_joints=n_joints,
     find_bodies=lambda names: (
       list(range(len(names))),
       list(names),
+    ),
+    indexing=SimpleNamespace(
+      joint_v_adr=torch.arange(
+        n_joints, device=device, dtype=torch.long,
+      ),
     ),
   )
 
